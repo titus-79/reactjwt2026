@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 
 import type { TodoItem } from './todo-item';
 import { createTodo, getTodos } from './todo.service';
+import { logoutToken } from '../auth/auth.service';
 
 export function TodosPage() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ export function TodosPage() {
 
   function logout() {
     // TODO: clear the authentication state once JWT authentication is implemented.
+    logoutToken()
     navigate('/');
   }
 

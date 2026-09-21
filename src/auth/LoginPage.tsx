@@ -1,16 +1,32 @@
 import { type FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router';
+import axios from 'axios';
+import { login } from './auth.service';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('bastien@example.com');
   const [password, setPassword] = useState('tacostacos');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
 
-    // TODO: authenticate against the backend before navigating.
-    navigate('/todos');
+    try {
+      await login({ username, password });
+      navigate('/todos');
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status && [401, 403].includes(err.response.status)) {
+        setError('Identifiants incorrects.');
+      } else {
+        setError('Connexion impossible, réessaie plus tard.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -42,7 +58,11 @@ export function LoginPage() {
           />
         </label>
 
-        <button type="submit">Send</button>
+        {error && <p role="alert">{error}</p>}
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Sending…' : 'Send'}
+        </button>
       </form>
     </>
   );
